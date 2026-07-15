@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My first website</title>
+</head>
+<body>
+
+    <form id="detailsForm" onsubmit="return false;">
+
+        <div>
+            <label for="fname">first name:</label>
+            <input type="text" id="fname" name="fname" value="Pranav" pattern="[A-Za-z\s]+" title="First name should not contain numbers" required>
+        </div>
+
+        <br>
+
+        <div>
+            <label for="lname">last name:</label>
+            <input type="text" id="lname" name="lname" value="Dev" pattern="[A-Za-z\s]+" title="Last name should not contain numbers" required>
+        </div>
+
+        <br>
+
+        <div>
+            <label for="bdate">birthdate:</label>
+            <input type="date" id="bdate" name="bdate">
+        </div>
+
+        <br>
+
+        <div>
+            <label for="email">email:</label>
+            <input type="email" id="email" name="email" value="jpranavdev@gmail.com" pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9-]+\.[a-zA-Z]{2,}" title="Email must have a proper domain, e.g. name@gmail.com (not name@.com)" required>
+        </div>
+
+        <br>
+
+        <div>
+            <label for="phone">phone #:</label>
+            <input type="tel" id="phone" name="phone" value="9551708685" pattern="[0-9]{10}" maxlength="10" title="Phone number must be exactly 10 digits" required>
+        </div>
+
+        <br>
+
+        <div>
+            <input type="reset">
+        </div>
+
+        <br>
+
+        <div>
+            <input type="submit">
+        </div>
+
+    </form>
+
+<script>
+        // Allow only digits in phone field, max 10
+        document.getElementById('phone').addEventListener('input', function (e) {
+            this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
+        });
+
+        // Custom validation + send to PostgreSQL via Node.js server
+        document.querySelector('form').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const fname = document.getElementById('fname');
+            const lname = document.getElementById('lname');
+            const bdate = document.getElementById('bdate');
+            const email = document.getElementById('email');
+            const phone = document.getElementById('phone');
+
+            const namePattern = /^[A-Za-z\s]+$/;
+            const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9-]+\.[a-zA-Z]{2,}$/;
+            const phonePattern = /^[0-9]{10}$/;
+
+            if (!namePattern.test(fname.value)) {
+                alert("First name should not contain numbers.");
+                return;
+            }
+            if (!namePattern.test(lname.value)) {
+                alert("Last name should not contain numbers.");
+                return;
+            }
+            if (!phonePattern.test(phone.value)) {
+                alert("Phone number must be exactly 10 digits.");
+                return;
+            }
+            if (!emailPattern.test(email.value)) {
+                alert("Please enter a valid email, e.g. name@gmail.com (not name@.com).");
+                return;
+            }
+
+            // All checks passed — send data to the Node.js server
+            try {
+                const response = await fetch('http://localhost:3000/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        fname: fname.value,
+                        lname: lname.value,
+                        bdate: bdate.value,
+                        email: email.value,
+                        phone: phone.value
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert("✅ Submitted successfully! Data saved to PostgreSQL.");
+                    document.querySelector('form').reset();
+                } else {
+                    alert("❌ Error: " + result.error);
+                }
+            } catch (err) {
+                alert("❌ Could not connect to the server. Make sure server.js is running.\n\nRun: node server.js");
+            }
+        });
+    </script>
+
+</body>
+</html>
